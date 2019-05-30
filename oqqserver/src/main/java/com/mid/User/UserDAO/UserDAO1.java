@@ -12,4 +12,5 @@ public interface UserDAO1 {
 
     public abstract String GetNameByID(String userid);
 
+    public abstract String GetNameByUsername(String username);
 }

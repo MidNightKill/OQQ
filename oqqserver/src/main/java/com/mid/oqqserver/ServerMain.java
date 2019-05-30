@@ -26,18 +26,42 @@ public class ServerMain
             ServerSocket serverSocket = new ServerSocket(11052);
             int m = 0;
             String str = "";
+
             while (true) {
                 try {
-                    str = "";
                     System.out.println("等待链接");
                     Socket socket = serverSocket.accept();
                     System.out.println("链接成功");
                     InputStream read = socket.getInputStream();
+                    OutputStream write = socket.getOutputStream();
+                    str = "";
                     int b = read.available();
+                    for(int i=0;i<500||b<1;++i)
+                    {
+                        b = read.available();
+                    }
+
+                    if(b<1)
+                    {
+                        System.out.println("b<1");
+                        write.write("登录失败".getBytes("utf-8"));
+                        write.flush();
+                        Thread.sleep(50);
+                        System.out.println("发送:" + "登录失败");
+                        continue;
+                    }
                     for (int i = 0; i < b; ++i) {
                         str += (char) read.read();
                     }
-                    System.out.println(str.length() );
+                    if(str.length()<1)
+                    {
+                        System.out.println("str<1");
+                        write.write("登录失败".getBytes("utf-8"));
+                        write.flush();
+                        Thread.sleep(50);
+                        System.out.println("发送:" + "登录失败");
+                        continue;
+                    }
                     System.out.println("————————————————————————————接收成功————————————————————————————" + m);
                     JSONObject json = (JSONObject) JSONValue.parse(str);
                     System.out.println("账号：" + json.get("username"));
@@ -47,12 +71,17 @@ public class ServerMain
                     // Thread.sleep(100);
                     String username = (String) json.get("username");
                     String password = (String) json.get("password");
-                    OutputStream write = socket.getOutputStream();
-                    str =UserService1.getInstance().LoginByUsername(username,password)?"登录成功":"登录失败";
-                    write.write(str.getBytes("utf-8"));
-                    write.flush();
-                    Thread.sleep(50);
-                    System.out.println("发送:" + str);
+
+//                    str =UserService1.getInstance().LoginByUsername(username,password)?(LoginSuccess(),"登录成功"):"登录失败";
+                    if(UserService1.getInstance().LoginByUsername(username,password))
+                    {
+                        str="登录成功";
+                        LoginSuccess(socket,username);
+                    }
+                    else
+                    {
+                        str="登录失败";
+                    }
                     write.write(str.getBytes("utf-8"));
                     write.flush();
                     Thread.sleep(50);
@@ -74,5 +103,10 @@ public class ServerMain
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public static void LoginSuccess(Socket socket,String username)
+    {
+        new Thread(new PersonThread(socket,username)).start();
+
     }
 }

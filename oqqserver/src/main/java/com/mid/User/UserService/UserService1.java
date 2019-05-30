@@ -27,7 +27,7 @@ public class UserService1 implements UserDAO1 {
     };
 
     // region 获取mysql连接
-    private Connection getConnection(){
+    public Connection getConnection(){
         String tb_driver="";
         String tb_url="";
         String tb_table="";
@@ -75,6 +75,23 @@ public class UserService1 implements UserDAO1 {
         return _Instance;
     }
     //endregion
+
+
+    @Override
+    public String GetNameByUsername(String username) {
+        try {
+            preparedStatement = connection.prepareStatement("select name from Common_User where username=?");
+            preparedStatement.setString(1, username);
+            result = preparedStatement.executeQuery();
+            if (result.next()&&result.getString("name")!=null) {
+                return result.getString("name");
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     //region 通过用户ID获取用户名
     @Override
