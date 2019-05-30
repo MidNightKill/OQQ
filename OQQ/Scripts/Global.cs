@@ -12,9 +12,11 @@ namespace OQQ.Scripts
 {
     class Global
     {
+        public static string username;
         public static Socket socket;
-        public static bool socketclock;
-
+        public static bool socketclock = false;
+        public static bool  getsocketclock = false;
+        public static string Fruserid;
         #region 连接服务器失败
         public static void ConnectERROR()
         {
@@ -25,6 +27,12 @@ namespace OQQ.Scripts
         #region 获取Socket
         public static void getSocket()
         {
+            if (getsocketclock)
+            {
+                Console.WriteLine("Socket锁定");
+                return;
+            }
+            getsocketclock = true;
             Global.socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             //IPAddress add = IPAddress.Parse(textBox2.Text);
@@ -54,14 +62,27 @@ namespace OQQ.Scripts
         }
         #endregion
 
+        public static string subjson(string str)
+        {
+            for (int i = 0; i < str.Length; ++i)
+            {
+                if (str[i] == 0)
+                {
+                    //Console.WriteLine(i);
+                    str = str.Substring(0, i);
+                    return str;
+                }
+            }
+            return str;
+        }
 
         public static bool SendMyMsg(string msg,string userid)//发送消息
         {
-            socketclock = true;
             var userJson = new {act="sendmsg",userid = userid, msg = msg };
             String str = JsonConvert.SerializeObject(userJson);
             return SendJson(str);
         }
+
         #region 发送Json
         public static bool SendJson(string json)
         {
@@ -90,22 +111,25 @@ namespace OQQ.Scripts
 
         public static bool delFr(string frid)//删除好友
         {
-            socketclock = true;
             var userJson = new { userid = frid, act = "removefriend" };
             String str = JsonConvert.SerializeObject(userJson);
             return SendJson(str);
         }
         public static bool addFr(string frid)//添加好友
         {
-            socketclock = true;
             var userJson = new { userid = frid, act = "addfriend" };
             String str = JsonConvert.SerializeObject(userJson);
             return SendJson(str);
         }
         public static bool serFr(string frid)//查询用户
         {
-            socketclock = true;
             var userJson = new { userid = frid, act = "searchfriend" };
+            String str = JsonConvert.SerializeObject(userJson);
+            return SendJson(str);
+        }
+        public static bool exitUser()
+        {
+            var userJson = new { act = "exituser" };
             String str = JsonConvert.SerializeObject(userJson);
             return SendJson(str);
         }

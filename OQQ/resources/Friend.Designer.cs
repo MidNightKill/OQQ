@@ -7,7 +7,7 @@ namespace OQQ.resources
     {
         public string FriendName="test";
         public string FriendID="test";
-        public int MsgNum = 99;
+        public int MsgNum = 0;
         public ArrayList msglist = new ArrayList();
         /// <summary> 
         /// 必需的设计器变量。
@@ -63,11 +63,11 @@ namespace OQQ.resources
             // 
             this.label2.AutoSize = true;
             this.label2.BackColor = System.Drawing.Color.Transparent;
-            this.label2.Font = new System.Drawing.Font("华文琥珀", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label2.Font = new System.Drawing.Font("华文琥珀", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.label2.ForeColor = System.Drawing.Color.Red;
-            this.label2.Location = new System.Drawing.Point(145, 51);
+            this.label2.Location = new System.Drawing.Point(145, 45);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(36, 15);
+            this.label2.Size = new System.Drawing.Size(47, 21);
             this.label2.TabIndex = 3;
             this.label2.Text = "99+";
             this.label2.Click += new System.EventHandler(this.label2_Click_2);

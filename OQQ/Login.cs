@@ -34,23 +34,31 @@ namespace OQQ
         #region 关闭Socket
         private void CloseSocket()
         {
-            Global.socket.Close();
+
+            Global.socket = null;
+            
         }
         #endregion
 
         #region 按钮单击事件
         private void button1_Click(object sender, EventArgs e)
         {
-            //if(!SocketClock)
-            //{
-            //    button1.Text = "登陆中";
-            //    new Thread(new ThreadStart(SocketLogin)).Start();
+            if (!SocketClock)
+            {
+                SocketClock = true;
+                Thread th = new Thread(new ThreadStart(SocketLogin));
+                th.Start();
 
-            //    SocketClock = true;
-            //    button1.Text = "登陆";
-            //}
-            this.Hide();
-            new OQQMainPanel().Show();
+                //SocketLogin();
+                SocketClock = false;
+                button1.Text = "登陆";
+            }
+            else
+            {
+                button1.Text = "登陆中";
+            }
+            //this.Hide();
+            //new OQQMainPanel().Show();
         }
         #endregion
 
@@ -69,20 +77,44 @@ namespace OQQ
         #region 登录线程
         private void SocketLogin()
         {
-           
             var userJson = new { username = UsernameText.Text, password = PasswordText.Text };
             String str = JsonConvert.SerializeObject(userJson);
             JObject jObject = (JObject)JsonConvert.DeserializeObject(str);
-            string returnMsg = string.Empty;
+            string returnMsg = "";
             byte[] buffer = new byte[1024];
-            Global.getSocket();
+
+            while(Global.socket==null)
+            {
+                Global.getsocketclock = false;
+                Global.getSocket();
+                Console.WriteLine("获取socket");
+            }
+            
+            Global.socket.Send(Encoding.ASCII.GetBytes(str));
+            //this.Invoke(new Action<String>(setTextBox2), new object[] { str });
+
+            Global.socket.Receive(buffer);
+            returnMsg = System.Text.Encoding.UTF8.GetString(buffer);
+            returnMsg = Global.subjson(returnMsg);
+            if (returnMsg.Equals("登录成功"))
+            {
+                Global.username = UsernameText.Text.ToString();
+                this.Invoke(new Action<String>(setTextBox2), new object[] { "true" });
+                //this.Hide();
+                this.Invoke(new Action(Hide));
+                this.Invoke(new Action(showMainPanel));
+                return;
+            }
+            else
+            {
+                this.Invoke(new Action<String>(setTextBox2), new object[] { "" + returnMsg });
+                Console.WriteLine("-" + returnMsg + "-");
+                CloseSocket();
+            }
+
             try
             {
-                Global.socket.Send(Encoding.ASCII.GetBytes(str));
-                //this.Invoke(new Action<String>(setTextBox2), new object[] { str });
-                Global.socket.Receive(buffer);
-                returnMsg = System.Text.Encoding.UTF8.GetString(buffer);
-                this.Invoke(new Action<String>(setTextBox2), new object[] { returnMsg });
+               
 
             }
             catch
@@ -92,14 +124,16 @@ namespace OQQ
             }
             finally
             {
-                //CloseSocket();
-                SocketClock = false;
+                
             }
            
         }
         #endregion
 
-
+       private void showMainPanel()
+        {
+            new OQQMainPanel().Show();
+        }
         #region 委托方法：更改字符
         private void SetTextBox1(String txt)
         {
